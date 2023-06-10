@@ -185,7 +185,7 @@ const FormCreateEditItem: React.FC<{
           setPicture("");
         });
     }
-  }, [picture]);
+  }, [isEdit]);
 
   return (
     <>
