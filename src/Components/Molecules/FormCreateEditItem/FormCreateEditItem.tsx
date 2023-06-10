@@ -64,14 +64,13 @@ const FormCreateEditItem: React.FC<{
         const keyInput = key as keyof typeof form;
         if (isEdit) {
           if (
-            !form[keyInput] &&
-            form[keyInput] === "" &&
-            form[keyInput] !== null
+            (!form[keyInput] || form[keyInput] === "") &&
+            keyInput !== "picture"
           ) {
             errInput = { ...errInput, [keyInput]: "required!" };
           }
         } else {
-          if (!form[keyInput] && form[keyInput] === "") {
+          if (!form[keyInput] || form[keyInput] === "") {
             errInput = { ...errInput, [keyInput]: "required!" };
           }
         }
