@@ -9,7 +9,7 @@ export const getAllItem = createAsyncThunk(
   ) => {
     try {
       const result = await axios({
-        url: "http://localhost:8000/api/v1/items",
+        url: "https://yusuf-demo-api.000webhostapp.com/api/v1/items",
         method: "GET",
         params,
         headers: {

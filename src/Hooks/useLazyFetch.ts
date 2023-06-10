@@ -58,7 +58,7 @@ const useLazyFetch = <ResultType>({
         headers = { ...headers, "Content-Type": "application/json" };
       }
       axios({
-        url: `http://localhost:8000${newUrl}`,
+        url: `https://yusuf-demo-api.000webhostapp.com/${newUrl}`,
         method,
         headers,
         ...(method === "GET" ? { params: bodyData } : { data: bodyData }),

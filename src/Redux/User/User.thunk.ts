@@ -8,7 +8,7 @@ export const onLogin = createAsyncThunk(
       const form = new FormData();
       form.append("name", params.name);
       const result = await axios({
-        url: "http://localhost:8000/api/v1/login",
+        url: "https://yusuf-demo-api.000webhostapp.com/api/v1/login",
         method: "POST",
         data: form,
       });

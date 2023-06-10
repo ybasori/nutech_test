@@ -128,7 +128,7 @@ const FormCreateEditItem: React.FC<{
 
   useEffect(() => {
     if (isEdit) {
-      setPicture(`http://localhost:8000/${isEdit.picture}`);
+      setPicture(`https://yusuf-demo-api.000webhostapp.com/${isEdit.picture}`);
       setForm({
         picture: null,
         name: isEdit.name,

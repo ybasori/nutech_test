@@ -66,7 +66,7 @@ function App() {
                 ? itemState.items.map((item, index) => (
                     <BoxItem
                       key={index}
-                      picture={`http://localhost:8000/${item.picture}`}
+                      picture={`https://yusuf-demo-api.000webhostapp.com/${item.picture}`}
                       name={item.name}
                       sell={item.sell}
                       buy={item.buy}
