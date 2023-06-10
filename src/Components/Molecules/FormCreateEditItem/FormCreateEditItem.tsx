@@ -6,6 +6,14 @@ import useLazyFetch from "../../../Hooks/useLazyFetch";
 import useUser from "../../../Hooks/useUser";
 import Modal from "../../Atoms/Modal/Modal";
 import FormLogin from "../FormLogin/FormLogin";
+import { storage } from "../../../firebase";
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
+import { v4 } from "uuid";
 
 const FormCreateEditItem: React.FC<{
   isEdit?: {
@@ -104,30 +112,64 @@ const FormCreateEditItem: React.FC<{
   });
 
   const onSubmit = () => {
+    const imageRef = ref(storage, `uploads/${v4()}`);
     if (!isEdit) {
-      onNewItem({ ...form, authorization: user.token ?? "" }, (_, error) => {
-        if (error) {
-          console.log(error);
-        } else {
-          afterSubmit();
-          onDismiss?.();
-        }
-      });
+      if (form.picture) {
+        uploadBytes(imageRef, form.picture).then((result) => {
+          onNewItem(
+            {
+              ...form,
+              picture: result.metadata.fullPath,
+              authorization: user.token ?? "",
+            },
+            (_, error) => {
+              if (error) {
+                deleteObject(ref(storage, result.metadata.fullPath));
+              } else {
+                afterSubmit();
+                onDismiss?.();
+              }
+            }
+          );
+        });
+      }
     } else {
-      onEditItem({ ...form, authorization: user.token ?? "" }, (_, error) => {
-        if (error) {
-          console.log(error);
-        } else {
-          afterSubmit();
-          onDismiss?.();
-        }
-      });
+      if (form.picture) {
+        uploadBytes(imageRef, form.picture).then((result) => {
+          onEditItem(
+            {
+              ...form,
+              picture: result.metadata.fullPath,
+              authorization: user.token ?? "",
+            },
+            (_, error) => {
+              if (error) {
+                deleteObject(ref(storage, result.metadata.fullPath));
+              } else {
+                afterSubmit();
+                onDismiss?.();
+              }
+            }
+          );
+        });
+      } else {
+        onEditItem(
+          { ...form, picture, authorization: user.token ?? "" },
+          (_, error) => {
+            if (error) {
+              console.log(error);
+            } else {
+              afterSubmit();
+              onDismiss?.();
+            }
+          }
+        );
+      }
     }
   };
 
   useEffect(() => {
     if (isEdit) {
-      setPicture(`https://yusuf-demo-api.000webhostapp.com/${isEdit.picture}`);
       setForm({
         picture: null,
         name: isEdit.name,
@@ -135,8 +177,15 @@ const FormCreateEditItem: React.FC<{
         sell: isEdit.sell.toString(),
         stock: isEdit.stock.toString(),
       });
+      getDownloadURL(ref(storage, isEdit.picture))
+        .then((result) => {
+          setPicture(result);
+        })
+        .catch(() => {
+          setPicture("");
+        });
     }
-  }, []);
+  }, [picture]);
 
   return (
     <>

@@ -12,6 +12,7 @@ import useUser from "../../Hooks/useUser";
 
 function App() {
   useUser();
+  const [pictureDelete, setPictureDelete] = useState<string | null>(null);
   const [isOpenAdd, setIsOpenAdd] = useState(false);
   const [isOpenEdit, setIsOpenEdit] = useState<{
     picture: string;
@@ -66,12 +67,15 @@ function App() {
                 ? itemState.items.map((item, index) => (
                     <BoxItem
                       key={index}
-                      picture={`https://yusuf-demo-api.000webhostapp.com/${item.picture}`}
+                      picture={item.picture}
                       name={item.name}
                       sell={item.sell}
                       buy={item.buy}
                       stock={item.stock}
-                      onDelete={() => setIsOpenDelete(item.uid)}
+                      onDelete={() => {
+                        setIsOpenDelete(item.uid);
+                        setPictureDelete(item.picture);
+                      }}
                       onEdit={() => setIsOpenEdit(item)}
                     />
                   ))
@@ -113,6 +117,7 @@ function App() {
       {!!isOpenDelete && (
         <Modal onDismiss={() => setIsOpenDelete(null)}>
           <ConfirmDeleteItem
+            picture={pictureDelete ?? ""}
             uid={isOpenDelete}
             onSubmit={onReload}
             onDismiss={() => setIsOpenDelete(null)}

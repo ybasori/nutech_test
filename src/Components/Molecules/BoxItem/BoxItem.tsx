@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../../Atoms/Button/Button";
+import { getDownloadURL, ref } from "firebase/storage";
+import { storage } from "../../../firebase";
 
 const BoxItem: React.FC<{
   picture: string;
@@ -10,13 +12,23 @@ const BoxItem: React.FC<{
   onDelete: () => void;
   onEdit: () => void;
 }> = ({ picture, name, sell, buy, stock, onDelete, onEdit }) => {
+  const [image, setImage] = useState("");
+  useEffect(() => {
+    getDownloadURL(ref(storage, picture))
+      .then((result) => {
+        setImage(result);
+      })
+      .catch(() => {
+        setImage("");
+      });
+  }, [picture]);
   return (
     <>
       <div className="box">
         <article className="media">
           <div className="media-left">
             <figure className="image is-64x64" style={{ overflow: "hidden" }}>
-              <img src={picture} alt="item" />
+              <img src={image} alt="item" />
             </figure>
           </div>
           <div className="media-content is-flex">
