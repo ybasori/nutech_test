@@ -50,7 +50,7 @@ function App() {
                 </div>
               </form>
             </div>
-            <div className="column is-one-fifth">
+            <div className="column is-one-third">
               <div className="columns">
                 <div className="column">
                   <Button onClick={() => onReload()}>Reload</Button>
