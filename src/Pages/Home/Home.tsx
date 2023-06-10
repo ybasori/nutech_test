@@ -50,12 +50,12 @@ function App() {
                 </div>
               </form>
             </div>
-            <div className="column">
+            <div className="column is-one-fifth">
               <div className="columns">
-                <div className="column is-one-fifth">
+                <div className="column">
                   <Button onClick={() => onReload()}>Reload</Button>
                 </div>
-                <div className="column is-one-fifth">
+                <div className="column">
                   <Button onClick={() => setIsOpenAdd(true)}>Add Item</Button>
                 </div>
               </div>
