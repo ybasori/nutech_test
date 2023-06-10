@@ -136,6 +136,7 @@ const FormCreateEditItem: React.FC<{
     } else {
       if (form.picture) {
         uploadBytes(imageRef, form.picture).then((result) => {
+          deleteObject(ref(storage, isEdit.picture));
           onEditItem(
             {
               ...form,
