@@ -154,7 +154,7 @@ const FormCreateEditItem: React.FC<{
         });
       } else {
         onEditItem(
-          { ...form, picture, authorization: user.token ?? "" },
+          { ...form, picture: isEdit.picture, authorization: user.token ?? "" },
           (_, error) => {
             if (error) {
               console.log(error);

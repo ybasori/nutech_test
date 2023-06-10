@@ -77,6 +77,12 @@ const useLazyFetch = <ResultType>({
         })
         .catch((err: AxiosError) => {
           setError(err.response);
+          if (
+            (err.response?.data as unknown as { errors: { token: string } })
+              .errors.token === "Expired token"
+          ) {
+            alert("please login again");
+          }
           setLoading(false);
           cb && cb(undefined, err.response);
         });
