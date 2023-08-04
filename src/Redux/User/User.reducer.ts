@@ -35,13 +35,13 @@ export const userSlice = createSlice({
       const ses = sessionStorage.getItem("user");
       if (loc) {
         const dt = JSON.parse(loc);
-        state.name = dt.name;
+        state.name = dt.user_display_name;
         state.token = dt.token;
         state.isLogin = true;
       }
       if (ses) {
         const dt = JSON.parse(ses);
-        state.name = dt.name;
+        state.name = dt.user_display_name;
         state.token = dt.token;
         state.isLogin = true;
       }
@@ -57,9 +57,13 @@ export const userSlice = createSlice({
         state.isLogin = false;
       })
       .addCase(onLogin.fulfilled, (state, { payload }) => {
-        localStorage.setItem("user", JSON.stringify(payload.data.data));
-        state.name = payload.data.data.name;
-        state.token = payload.data.data.token;
+        if (payload.rememberMe) {
+          localStorage.setItem("user", JSON.stringify(payload.result.data));
+        } else {
+          sessionStorage.setItem("user", JSON.stringify(payload.result.data));
+        }
+        state.name = payload.result.data.user_display_name;
+        state.token = payload.result.data.token;
         state.loading = false;
         state.error = null;
         state.isLogin = true;

@@ -6,7 +6,15 @@ const Button: React.FC<{
   type?: "button" | "submit";
   variant?: "" | "success" | "link" | "danger";
   loading?: boolean;
-}> = ({ children, onClick, type = "button", variant = "", loading }) => {
+  disabled?: boolean;
+}> = ({
+  children,
+  onClick,
+  type = "button",
+  variant = "",
+  loading,
+  disabled = false,
+}) => {
   return (
     <>
       <button
@@ -15,6 +23,7 @@ const Button: React.FC<{
         }`}
         type={type}
         onClick={onClick}
+        disabled={disabled}
       >
         {children}
       </button>

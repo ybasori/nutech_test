@@ -1,96 +1,87 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useState } from "react";
-import axios, { AxiosResponse, AxiosError } from "axios";
+import axios, { AxiosResponse } from "axios";
+import { RootState } from "../Redux/store";
+import { useSelector } from "react-redux";
+import useHelper from "./useHelper";
 
 const methods = {
   GET: "get",
   POST: "post",
   PUT: "put",
   PATCH: "patch",
+  DELETE: "delete",
 };
 interface Props {
   url: string;
   method?: keyof typeof methods;
-  credentials?: string;
-  authorization?: string;
 }
 
-const useLazyFetch = <ResultType>({
-  url,
-  method = "GET",
-  credentials,
-}: Props) => {
+const useLazyFetch = <ResultType>({ url, method = "GET" }: Props) => {
+  const { expandJSON } = useHelper();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<ResultType>();
-  const [arrData] = useState<{ key: string; value: string }[]>();
   const [error, setError] = useState<AxiosResponse>();
+  const userState = useSelector((state: RootState) => state.user);
 
   const onAction = useCallback(
     (
-      body: unknown = {},
+      {
+        path = "",
+        body = {},
+      }: {
+        body?: any;
+        path?: string;
+      },
       cb?: (success?: AxiosResponse, error?: AxiosResponse) => void
     ) => {
+      const source = axios.CancelToken.source();
       setLoading(true);
+      setData(undefined);
       let bodyData: unknown = null;
-      if (body instanceof Object) {
-        const formd = new FormData();
-        for (const key in body) {
-          const keyName = key as keyof typeof body;
-          if (body[keyName] instanceof File) {
-            formd.append(
-              keyName,
-              body[keyName] as unknown as File,
-              body[keyName].name
-            );
-          } else {
-            formd.append(keyName, body[keyName] as unknown as string);
-          }
-        }
-        bodyData = formd;
-      } else {
-        bodyData = body;
+      const formd = new FormData();
+      const bd = expandJSON(body);
+      for (const key in bd) {
+        formd.append(bd[key].label, bd[key].value);
       }
+      bodyData = formd;
       const newUrl = url;
       let headers: {
         "Content-Type"?: string;
         Authorization?: string;
       } = {};
-      if (!(bodyData instanceof FormData)) {
-        headers = { ...headers, "Content-Type": "application/json" };
+
+      if (userState.token) {
+        headers = { ...headers, Authorization: `Bearer ${userState.token}` };
       }
       axios({
-        url: `https://yusuf-demo-api.000webhostapp.com${newUrl}`,
+        url: `${newUrl}${path}`,
         method,
-        headers,
+        cancelToken: source.token,
+        headers: { ...headers },
         ...(method === "GET" ? { params: bodyData } : { data: bodyData }),
-        ...(credentials ? { credentials } : {}),
       })
         .then((res: AxiosResponse) => {
           setLoading(false);
+          setData(res.data as ResultType);
           if (cb) {
-            setData(res.data as ResultType);
             cb && cb(res, undefined);
-          } else {
-            if (res?.data?.redirectUrl) {
-              window.location.replace(res?.data?.redirectUrl);
-            }
           }
         })
-        .catch((err: AxiosError) => {
-          setError(err.response);
-          if (
-            (err.response?.data as unknown as { errors: { token: string } })
-              .errors.token === "Expired token"
-          ) {
-            alert("please login again");
-          }
+        .catch((err) => {
+          setError(err);
           setLoading(false);
           cb && cb(undefined, err.response);
         });
+
+      return () => {
+        source.cancel("Cancelling in cleanup");
+      };
     },
-    [credentials, method, url]
+    [method, url, userState.token, expandJSON]
   );
 
-  return [onAction, { loading, data, arrData, error }] as const;
+  return [onAction, { loading, data, error }] as const;
 };
 
 export default useLazyFetch;

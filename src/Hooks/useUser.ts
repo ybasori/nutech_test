@@ -10,11 +10,15 @@ const useUser = () => {
 
   useEffect(() => {
     dispatch(loadUser());
-  }, []);
+  }, [dispatch]);
 
   return {
     user: userState,
-    onLogin: (data: { name: string }) => dispatch(onLogin(data)),
+    onLogin: (data: {
+      username: string;
+      password: string;
+      rememberMe: boolean;
+    }) => dispatch(onLogin(data)),
     onLogout: () => dispatch(onLogout()),
   };
 };

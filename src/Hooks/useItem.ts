@@ -8,8 +8,7 @@ const useItem = () => {
 
   return {
     itemState,
-    getAllItem: (params: { page: number; size: number; keyword: string }) =>
-      dispatch(getAllItem(params)),
+    getAllItem: (params: { search: string }) => dispatch(getAllItem(params)),
   };
 };
 

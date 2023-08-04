@@ -1,54 +1,42 @@
 {
-  "name": "awesome-project",
-  "version": "0.1.0",
-  "private": true,
+  "name": "nutech-test-new",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "npx eslint src/**/*.ts src/**/*.tsx --fix",
+    "start": "npx webpack serve --config webpack.dev.js",
+    "build": "npx webpack --config webpack.prod.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.4",
     "@reduxjs/toolkit": "^1.9.5",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/uuid": "^9.0.2",
     "axios": "^1.4.0",
     "bulma": "^0.9.4",
-    "firebase": "^9.22.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-redux": "^8.0.7",
-    "react-router-dom": "^6.12.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^4.9.5",
-    "uuid": "^9.0.0",
-    "web-vitals": "^2.1.4"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "react-redux": "^8.1.2",
+    "react-router-dom": "^6.14.2",
+    "sass": "^1.64.2",
+    "typescript": "^4.6.2",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-merge": "^5.8.0"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.59.9",
-    "@typescript-eslint/parser": "^5.59.9",
-    "eslint": "^8.42.0",
-    "eslint-plugin-react": "^7.32.2"
+    "@types/react": "^18.2.18",
+    "@types/react-dom": "^18.2.7",
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
+    "css-loader": "^6.8.1",
+    "eslint": "^8.46.0",
+    "eslint-plugin-react": "^7.33.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "mini-css-extract-plugin": "^2.7.6",
+    "sass-loader": "^13.3.2",
+    "style-loader": "^3.3.3",
+    "ts-loader": "^9.4.4",
+    "webpack-dev-server": "^4.15.1"
   }
 }

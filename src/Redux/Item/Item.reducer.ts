@@ -22,8 +22,8 @@ export const itemSlice = createSlice({
         state.errorItems = null;
       })
       .addCase(getAllItem.fulfilled, (state, { payload }) => {
-        state.items = payload.data.data.items;
-        state.totalItems = payload.data.data.total;
+        state.items = payload.data;
+        state.totalItems = 10;
         state.isLoadingItems = false;
         state.errorItems = null;
       })

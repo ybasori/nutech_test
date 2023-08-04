@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
+import mediaReducer from "./Media/Media.reducer";
 import itemReducer from "./Item/Item.reducer";
 import userReducer from "./User/User.reducer";
 
 export const store = configureStore({
   reducer: {
+    media: mediaReducer,
     item: itemReducer,
     user: userReducer,
   },

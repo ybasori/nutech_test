@@ -12,25 +12,31 @@ import useUser from "../../Hooks/useUser";
 
 function App() {
   useUser();
-  const [pictureDelete, setPictureDelete] = useState<string | null>(null);
   const [isOpenAdd, setIsOpenAdd] = useState(false);
   const [isOpenEdit, setIsOpenEdit] = useState<{
-    picture: string;
-    name: string;
-    buy: number;
-    sell: number;
-    stock: number;
-    uid: string;
+    id: string;
+    title: { rendered: string };
+    acf: {
+      foto_barang: string;
+      harga_beli: number;
+      harga_jual: number;
+      stok: number;
+    };
   } | null>(null);
   const [isOpenDelete, setIsOpenDelete] = useState<string | null>(null);
   const { itemState, getAllItem } = useItem();
-  const [params, setParams] = useState({ page: 1, size: 10, keyword: "" });
+  const [params, setParams] = useState({ search: "" });
+  const [pagination, setPagination] = useState({ page: 1, size: 10 });
+  const [isReloading, setIsReloading] = useState(true);
 
-  const onReload = useCallback(() => getAllItem(params), [params]);
+  const onReload = useCallback(() => getAllItem(params), [params, getAllItem]);
 
   useEffect(() => {
-    onReload();
-  }, [onReload]);
+    if (isReloading) {
+      setIsReloading(false);
+      onReload();
+    }
+  }, [onReload, isReloading]);
   return (
     <>
       <div className="columns">
@@ -40,10 +46,11 @@ function App() {
               <form>
                 <div className="field">
                   <Input
-                    value={params.keyword}
-                    onChange={(e) =>
-                      setParams({ ...params, keyword: e.currentTarget.value })
-                    }
+                    value={params.search}
+                    onChange={(e) => {
+                      setParams({ ...params, search: e.currentTarget.value });
+                      setIsReloading(true);
+                    }}
                     name="search"
                     placeholder="Search Item"
                   />
@@ -53,7 +60,7 @@ function App() {
             <div className="column is-one-third">
               <div className="columns">
                 <div className="column">
-                  <Button onClick={() => onReload()}>Reload</Button>
+                  <Button onClick={() => setIsReloading(true)}>Reload</Button>
                 </div>
                 <div className="column">
                   <Button onClick={() => setIsOpenAdd(true)}>Add Item</Button>
@@ -64,32 +71,38 @@ function App() {
           {!itemState.isLoadingItems ? (
             <>
               {itemState.items && itemState.items.length !== 0
-                ? itemState.items.map((item, index) => (
-                    <BoxItem
-                      key={index}
-                      picture={item.picture}
-                      name={item.name}
-                      sell={item.sell}
-                      buy={item.buy}
-                      stock={item.stock}
-                      onDelete={() => {
-                        setIsOpenDelete(item.uid);
-                        setPictureDelete(item.picture);
-                      }}
-                      onEdit={() => setIsOpenEdit(item)}
-                    />
-                  ))
+                ? itemState.items
+                    .filter((_, index) => {
+                      const offset = (pagination.page - 1) * pagination.size;
+                      return (
+                        index >= offset && index < offset + pagination.size
+                      );
+                    })
+                    .map((item, index) => (
+                      <BoxItem
+                        key={index}
+                        picture={item.acf.foto_barang}
+                        name={item.title.rendered}
+                        sell={item.acf.harga_jual}
+                        buy={item.acf.harga_beli}
+                        stock={item.acf.stok}
+                        onDelete={() => {
+                          setIsOpenDelete(item.id);
+                        }}
+                        onEdit={() => setIsOpenEdit(item)}
+                      />
+                    ))
                 : "No Data"}
             </>
           ) : (
             "Loading ..."
           )}
-          {itemState.totalItems ? (
+          {itemState.items?.length ? (
             <Pagination
-              currentPage={params.page}
-              totalPage={Math.ceil(itemState.totalItems / params.size)}
+              currentPage={pagination.page}
+              totalPage={Math.ceil(itemState.items.length / pagination.size)}
               onChange={({ currentPage }) =>
-                setParams({ ...params, page: currentPage })
+                setPagination({ ...pagination, page: currentPage })
               }
             />
           ) : (
@@ -117,7 +130,6 @@ function App() {
       {!!isOpenDelete && (
         <Modal onDismiss={() => setIsOpenDelete(null)}>
           <ConfirmDeleteItem
-            picture={pictureDelete ?? ""}
             uid={isOpenDelete}
             onSubmit={onReload}
             onDismiss={() => setIsOpenDelete(null)}

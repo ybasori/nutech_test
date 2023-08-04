@@ -1,15 +1,19 @@
-import React, { useRef } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../Button/Button";
+import Modal from "../Modal/Modal";
+import ImageSelection from "../../Molecules/ImageSelection/ImageSelection";
+import useLazyFetch from "../../../Hooks/useLazyFetch";
+import ApiList from "../../../Config/ApiList";
 
 const Input: React.FC<{
   value: string;
   onChange: (event: {
-    currentTarget: { value: string; name: string; files?: FileList | null };
+    currentTarget: { value: string; name: string; picture?: string };
   }) => void;
   name: string;
   placeholder: string;
   label?: string;
-  type?: "text" | "number" | "image";
+  type?: "text" | "number" | "image" | "password";
   error?: string;
   loading?: boolean;
   valid?: string;
@@ -26,7 +30,27 @@ const Input: React.FC<{
   valid = "",
   min,
 }) => {
-  const browseRef = useRef<HTMLInputElement>(null);
+  const [isOpenModalImage, setIsOpenModalImage] = useState(false);
+
+  const [isGettingImage, setIsGettingImage] = useState(true);
+
+  const [onGetImage, { data, loading: isLoading }] = useLazyFetch<{
+    id: number;
+    source_url: string;
+  }>({
+    url: ApiList.MediaUrl,
+    method: "GET",
+  });
+
+  useEffect(() => {
+    if (value && isGettingImage && type === "image" && !isNaN(Number(value))) {
+      setIsGettingImage(false);
+      onGetImage({
+        path: `/${value}`,
+      });
+    }
+  }, [value, type, onGetImage, isGettingImage]);
+
   return (
     <>
       <div className="field">
@@ -36,12 +60,16 @@ const Input: React.FC<{
             error !== "" || valid !== "" ? "has-icons-right" : ""
           } ${loading ? "is-loading" : ""}`}
         >
-          {type === "image" && value !== "" && (
+          {type === "image" && value && (
             <div>
-              <img
-                src={value}
-                style={{ height: 200, width: "100%", objectFit: "cover" }}
-              />
+              {!isLoading ? (
+                <img
+                  src={data?.source_url ?? ""}
+                  style={{ height: 200, width: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <>Loading ...</>
+              )}
             </div>
           )}
           <input
@@ -56,27 +84,11 @@ const Input: React.FC<{
             value={type === "image" ? undefined : value}
             accept={type === "image" ? "image/jpeg, image/png" : undefined}
             onChange={(e) => {
-              if (type === "image") {
-                if (e.currentTarget.files && e.currentTarget.files[0]) {
-                  const reader = new FileReader();
-                  const files = e.currentTarget.files;
-                  reader.onload = (ev) => {
-                    onChange({
-                      currentTarget: {
-                        name,
-                        value: `${ev.target?.result}` ?? "",
-                        files,
-                      },
-                    });
-                  };
-                  reader.readAsDataURL(e.currentTarget.files[0]);
-                }
-              } else {
+              if (type !== "image") {
                 return onChange(e);
               }
             }}
             name={name}
-            ref={type === "image" ? browseRef : undefined}
           />
 
           {error !== "" && (
@@ -90,9 +102,27 @@ const Input: React.FC<{
             </span>
           )}
           {type === "image" && (
-            <Button onClick={() => browseRef.current?.click()}>
-              {value === "" ? "Select" : "Change"} {placeholder}
-            </Button>
+            <>
+              <Button onClick={() => setIsOpenModalImage(true)}>
+                {value === "" ? "Select" : "Change"} {placeholder}
+              </Button>
+              {isOpenModalImage && (
+                <Modal onDismiss={() => setIsOpenModalImage(false)}>
+                  <ImageSelection
+                    onDismiss={() => setIsOpenModalImage(false)}
+                    onChange={(e) => {
+                      setIsGettingImage(true);
+                      onChange({
+                        currentTarget: {
+                          name,
+                          value: `${e.id}` ?? "",
+                        },
+                      });
+                    }}
+                  />
+                </Modal>
+              )}
+            </>
           )}
         </div>
         {valid !== "" && <p className="help is-success">{valid}</p>}

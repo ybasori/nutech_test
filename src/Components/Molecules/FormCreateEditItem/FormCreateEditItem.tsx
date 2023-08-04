@@ -6,38 +6,34 @@ import useLazyFetch from "../../../Hooks/useLazyFetch";
 import useUser from "../../../Hooks/useUser";
 import Modal from "../../Atoms/Modal/Modal";
 import FormLogin from "../FormLogin/FormLogin";
-import { storage } from "../../../firebase";
-import {
-  deleteObject,
-  getDownloadURL,
-  ref,
-  uploadBytes,
-} from "firebase/storage";
-import { v4 } from "uuid";
+import ApiList from "../../../Config/ApiList";
 
 const FormCreateEditItem: React.FC<{
   isEdit?: {
-    name: string;
-    picture: string;
-    buy: number;
-    sell: number;
-    stock: number;
-    uid: string;
+    id: string;
+    title: { rendered: string };
+    acf: {
+      foto_barang: string;
+      harga_beli: number;
+      harga_jual: number;
+      stok: number;
+    };
   };
   onDismiss?: () => void;
   onSubmit: () => void;
 }> = ({ isEdit = undefined, onDismiss, onSubmit: afterSubmit }) => {
   const { user, onLogout } = useUser();
   const submitBtnRef = useRef<HTMLButtonElement>(null);
-  const [picture, setPicture] = useState("");
+  const [isChecking, setIsChecking] = useState(false);
+  const [counter, setCounter] = useState(0);
   const [form, setForm] = useState<{
-    picture: File | null;
+    picture: string;
     name: string;
     buy: string;
     sell: string;
     stock: string;
   }>({
-    picture: null,
+    picture: "",
     name: "",
     buy: "",
     sell: "",
@@ -56,10 +52,7 @@ const FormCreateEditItem: React.FC<{
     setErrorForm({ ...errorForm, [e.currentTarget.name]: "" });
     setForm({
       ...form,
-      [e.currentTarget.name]:
-        e.currentTarget.name === "picture"
-          ? e.currentTarget.files?.[0]
-          : e.currentTarget.value,
+      [e.currentTarget.name]: e.currentTarget.value,
     });
   };
 
@@ -70,22 +63,8 @@ const FormCreateEditItem: React.FC<{
       let errInput = { ...errorForm };
       Object.keys(form).map((key) => {
         const keyInput = key as keyof typeof form;
-        if (isEdit) {
-          if (
-            (!form[keyInput] || form[keyInput] === "") &&
-            keyInput !== "picture"
-          ) {
-            errInput = { ...errInput, [keyInput]: "required!" };
-          }
-        } else {
-          if (!form[keyInput] || form[keyInput] === "") {
-            errInput = { ...errInput, [keyInput]: "required!" };
-          }
-        }
-        if (keyInput === "picture" && form[keyInput] !== null) {
-          if ((form.picture?.size ?? 0) / 1024 > 100) {
-            errInput = { ...errInput, [keyInput]: "should be less than 100kb" };
-          }
+        if (!form[keyInput] || form[keyInput] === "") {
+          errInput = { ...errInput, [keyInput]: "required!" };
         }
       });
       setErrorForm({ ...errInput });
@@ -99,94 +78,118 @@ const FormCreateEditItem: React.FC<{
     };
 
   const [onNewItem, { loading }] = useLazyFetch({
-    url: "/api/v1/items",
+    url: ApiList.BarangUrl,
     method: "POST",
   });
   const [onEditItem, { loading: editLoading }] = useLazyFetch({
-    url: `/api/v1/items/${isEdit?.uid}/edit`,
+    url: ApiList.BarangUrl,
     method: "POST",
   });
   const [onAvailableName, { loading: availableLoading }] = useLazyFetch({
-    url: "/api/v1/items/available-name",
-    method: "POST",
+    url: ApiList.BarangUrl,
+    method: "GET",
   });
 
   const onSubmit = () => {
-    const imageRef = ref(storage, `uploads/${v4()}`);
     if (!isEdit) {
-      if (form.picture) {
-        uploadBytes(imageRef, form.picture).then((result) => {
-          onNewItem(
-            {
-              ...form,
-              picture: result.metadata.fullPath,
-              authorization: user.token ?? "",
+      onNewItem(
+        {
+          body: {
+            title: form.name,
+            status: "publish",
+            fields: {
+              harga_beli: form.buy,
+              harga_jual: form.sell,
+              stok: form.stock,
+              foto_barang: form.picture,
             },
-            (_, error) => {
-              if (error) {
-                deleteObject(ref(storage, result.metadata.fullPath));
-              } else {
-                afterSubmit();
-                onDismiss?.();
-              }
-            }
-          );
-        });
-      }
-    } else {
-      if (form.picture) {
-        uploadBytes(imageRef, form.picture).then((result) => {
-          deleteObject(ref(storage, isEdit.picture));
-          onEditItem(
-            {
-              ...form,
-              picture: result.metadata.fullPath,
-              authorization: user.token ?? "",
-            },
-            (_, error) => {
-              if (error) {
-                deleteObject(ref(storage, result.metadata.fullPath));
-              } else {
-                afterSubmit();
-                onDismiss?.();
-              }
-            }
-          );
-        });
-      } else {
-        onEditItem(
-          { ...form, picture: isEdit.picture, authorization: user.token ?? "" },
-          (_, error) => {
-            if (error) {
-              console.log(error);
-            } else {
-              afterSubmit();
-              onDismiss?.();
-            }
+          },
+        },
+        (_, error) => {
+          if (!error) {
+            afterSubmit();
+            onDismiss?.();
           }
-        );
-      }
+        }
+      );
+    } else {
+      onEditItem(
+        {
+          path: `/${isEdit.id}`,
+          body: {
+            title: form.name,
+            status: "publish",
+            fields: {
+              harga_beli: form.buy,
+              harga_jual: form.sell,
+              stok: form.stock,
+              foto_barang: form.picture,
+            },
+          },
+        },
+        (_, error) => {
+          if (!error) {
+            afterSubmit();
+            onDismiss?.();
+          }
+        }
+      );
     }
   };
 
   useEffect(() => {
     if (isEdit) {
       setForm({
-        picture: null,
-        name: isEdit.name,
-        buy: isEdit.buy.toString(),
-        sell: isEdit.sell.toString(),
-        stock: isEdit.stock.toString(),
+        picture: isEdit.acf.foto_barang,
+        name: isEdit.title.rendered,
+        buy: isEdit.acf.harga_beli.toString(),
+        sell: isEdit.acf.harga_jual.toString(),
+        stock: isEdit.acf.stok.toString(),
       });
-      getDownloadURL(ref(storage, isEdit.picture))
-        .then((result) => {
-          setPicture(result);
-        })
-        .catch(() => {
-          setPicture("");
-        });
     }
   }, [isEdit]);
+
+  useEffect(() => {
+    if (form.name !== "" && counter === 0) {
+      setIsChecking(true);
+    }
+  }, [counter, form.name]);
+  useEffect(() => {
+    setInterval(() => {
+      setCounter((prev) => prev - 1);
+    }, 1000);
+  }, []);
+  useEffect(() => {
+    if (isChecking && !availableLoading) {
+      setIsChecking(false);
+      onAvailableName(
+        {
+          path: `?search=${form.name}`,
+        },
+        (data, error) => {
+          if (!error) {
+            if (
+              data?.data.length > 0 &&
+              data?.data[0].title.rendered === form.name &&
+              data?.data[0].id !== isEdit?.id
+            ) {
+              setErrorForm({
+                ...errorForm,
+                name: "Name not available",
+              });
+            }
+          }
+        }
+      );
+    }
+  }, [
+    isChecking,
+    availableLoading,
+    errorForm,
+    form.name,
+    isEdit?.id,
+    onAvailableName,
+  ]);
 
   return (
     <>
@@ -202,9 +205,8 @@ const FormCreateEditItem: React.FC<{
       <section className="modal-card-body">
         <form onSubmit={validate(onSubmit)}>
           <Input
-            value={picture}
+            value={form.picture}
             onChange={(e) => {
-              setPicture(e.currentTarget.value);
               onChangeInput(e);
             }}
             name="picture"
@@ -217,23 +219,7 @@ const FormCreateEditItem: React.FC<{
             value={form.name}
             onChange={(e) => {
               onChangeInput(e);
-              onAvailableName(
-                {
-                  name: e.currentTarget.value,
-                  ...(isEdit ? { except: isEdit.uid } : {}),
-                  authorization: user.token,
-                },
-                (data, error) => {
-                  if (!error) {
-                    if (data?.data.data !== 1) {
-                      setErrorForm({
-                        ...errorForm,
-                        name: "Name not available",
-                      });
-                    }
-                  }
-                }
-              );
+              setCounter(1);
             }}
             name="name"
             placeholder="Name"
@@ -276,6 +262,7 @@ const FormCreateEditItem: React.FC<{
             type="submit"
             style={{ display: "none" }}
             ref={submitBtnRef}
+            disabled={counter > 0 || loading || editLoading || availableLoading}
           />
         </form>
       </section>
@@ -284,7 +271,7 @@ const FormCreateEditItem: React.FC<{
           type="button"
           variant="success"
           onClick={() => submitBtnRef.current?.click()}
-          loading={loading || editLoading}
+          loading={loading || editLoading || counter > 0 || availableLoading}
         >
           Save changes
         </Button>

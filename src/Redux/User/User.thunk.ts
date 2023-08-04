@@ -1,18 +1,23 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios, { AxiosError } from "axios";
+import ApiList from "../../Config/ApiList";
 
 export const onLogin = createAsyncThunk(
   "user/onLogin",
-  async (params: { name: string }, { rejectWithValue }) => {
+  async (
+    params: { username: string; password: string; rememberMe: boolean },
+    { rejectWithValue }
+  ) => {
     try {
       const form = new FormData();
-      form.append("name", params.name);
+      form.append("username", params.username);
+      form.append("password", params.password);
       const result = await axios({
-        url: "https://yusuf-demo-api.000webhostapp.com/api/v1/login",
+        url: ApiList.LoginUrl,
         method: "POST",
         data: form,
       });
-      return result;
+      return { result, rememberMe: params.rememberMe };
     } catch (err) {
       if (err instanceof AxiosError) {
         return rejectWithValue(err.response);

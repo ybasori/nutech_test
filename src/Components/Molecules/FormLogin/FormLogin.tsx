@@ -6,12 +6,17 @@ import Button from "../../Atoms/Button/Button";
 const FormLogin: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) => {
   const { user, onLogin } = useUser();
   const [form, setForm] = useState<{
-    name: string;
+    username: string;
+    password: string;
+    rememberMe: boolean;
   }>({
-    name: "",
+    username: "admin",
+    password: "Admin123.",
+    rememberMe: false,
   });
   const [errorForm, setErrorForm] = useState({
-    name: "",
+    username: "",
+    password: "",
   });
   const submitBtnRef = useRef<HTMLButtonElement>(null);
   const onChangeInput = (e: {
@@ -23,6 +28,7 @@ const FormLogin: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) => {
       [e.currentTarget.name]: e.currentTarget.value,
     });
   };
+
   const validate =
     (handleSubmit: () => void) => (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -43,9 +49,11 @@ const FormLogin: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) => {
         return handleSubmit();
       }
     };
+
   const onSubmit = () => {
     onLogin(form);
   };
+
   return (
     <>
       <header className="modal-card-head">
@@ -55,13 +63,32 @@ const FormLogin: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) => {
       <section className="modal-card-body">
         <form onSubmit={validate(onSubmit)}>
           <Input
-            value={form.name}
+            value={form.username}
             onChange={(e) => onChangeInput(e)}
-            name="name"
-            placeholder="Name"
-            label={"Name"}
-            error={errorForm.name}
+            name="username"
+            placeholder="Username"
+            label={"Username"}
+            error={errorForm.username}
           />
+          <Input
+            type="password"
+            value={form.password}
+            onChange={(e) => onChangeInput(e)}
+            name="password"
+            placeholder="Password"
+            label={"Password"}
+            error={errorForm.password}
+          />
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              onChange={(e) =>
+                setForm({ ...form, rememberMe: e.currentTarget.checked })
+              }
+              checked={form.rememberMe}
+            />
+            Remember me
+          </label>
           <button
             type="submit"
             style={{ display: "none" }}

@@ -2,14 +2,13 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios, { AxiosError } from "axios";
 import ApiList from "../../Config/ApiList";
 
-export const getAllItem = createAsyncThunk(
-  "item/getAllItem",
-  async (params: { search?: string } | void, { rejectWithValue }) => {
+export const getMedia = createAsyncThunk(
+  "media/getMedia",
+  async (_params, { rejectWithValue }) => {
     try {
       const result = await axios({
-        url: ApiList.BarangUrl + "?zzzz",
+        url: ApiList.MediaUrl,
         method: "GET",
-        params,
         headers: {
           "Content-Type": "application/json",
         },

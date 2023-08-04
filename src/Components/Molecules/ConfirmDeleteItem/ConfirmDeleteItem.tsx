@@ -4,19 +4,17 @@ import useLazyFetch from "../../../Hooks/useLazyFetch";
 import useUser from "../../../Hooks/useUser";
 import Modal from "../../Atoms/Modal/Modal";
 import FormLogin from "../FormLogin/FormLogin";
-import { deleteObject, ref } from "firebase/storage";
-import { storage } from "../../../firebase";
+import ApiList from "../../../Config/ApiList";
 
 const ConfirmDeleteItem: React.FC<{
   onDismiss?: () => void;
   uid: string;
   onSubmit: () => void;
-  picture: string;
-}> = ({ onDismiss, uid, onSubmit, picture }) => {
+}> = ({ onDismiss, uid, onSubmit }) => {
   const { user, onLogout } = useUser();
   const [onDelete, { loading }] = useLazyFetch({
-    url: `/api/v1/items/${uid}/delete`,
-    method: "POST",
+    url: `${ApiList.BarangUrl}/${uid}`,
+    method: "DELETE",
   });
   return (
     <>
@@ -34,8 +32,7 @@ const ConfirmDeleteItem: React.FC<{
           type={"button"}
           loading={loading}
           onClick={() => {
-            return onDelete({ authorization: user.token }, () => {
-              deleteObject(ref(storage, picture));
+            return onDelete({ body: { authorization: user.token } }, () => {
               onSubmit();
               onDismiss?.();
             });
