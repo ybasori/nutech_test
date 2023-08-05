@@ -170,7 +170,8 @@ const FormCreateEditItem: React.FC<{
           if (!error) {
             if (
               data?.data.length > 0 &&
-              data?.data[0].title.rendered === form.name &&
+              `${data?.data[0].title.rendered}`.toLowerCase() ===
+                `${form.name}`.toLowerCase() &&
               data?.data[0].id !== isEdit?.id
             ) {
               setErrorForm({

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-console.log(__dirname);
+// const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   entry: {
@@ -49,6 +49,7 @@ module.exports = {
     runtimeChunk: "single",
   },
   plugins: [
+    // new HtmlWebpackPlugin({ template: "./public/index.html" }),
     new MiniCssExtractPlugin({
       filename: "react-styles.css",
     }),

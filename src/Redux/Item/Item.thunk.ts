@@ -7,7 +7,7 @@ export const getAllItem = createAsyncThunk(
   async (params: { search?: string } | void, { rejectWithValue }) => {
     try {
       const result = await axios({
-        url: ApiList.BarangUrl + "?zzzz",
+        url: ApiList.BarangUrl,
         method: "GET",
         params,
         headers: {

@@ -13,7 +13,7 @@ module.exports = merge(common, {
     hot: true,
     proxy: {
       "*": {
-        target: `http://0.0.0.0:8000`,
+        target: "https://yusuf-demo.online",
         // target: `http://localhost:8000`,
         changeOrigin: true,
         // secure: true,
@@ -22,6 +22,6 @@ module.exports = merge(common, {
   },
   output: {
     clean: true,
-    publicPath: `http://localhost:3000/wp-content/themes/wpreact/`,
+    publicPath: "http://localhost:3000/wp-content/themes/wpreact/",
   },
 });
