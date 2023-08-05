@@ -15,7 +15,7 @@ module.exports = {
   },
   output: {
     clean: true,
-    path: path.resolve(__dirname, "output"),
+    path: path.resolve(__dirname, "build"),
     filename: "[name].bundle.js",
   },
   module: {
